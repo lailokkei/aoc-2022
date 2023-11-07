@@ -1,45 +1,40 @@
 use std::{
-    fs::File,
-    io::{BufRead, BufReader},
+    cmp::Reverse,
+    collections::BinaryHeap,
+    fs::{self},
 };
 
-struct Max {
-    max: i32,
-    current: i32,
-}
+fn sum_top_k(lines: &String, k: i32) -> i32 {
+    let mut top_k = BinaryHeap::new();
+    let mut current = 0;
 
-impl Max {
-    fn new() -> Max {
-        return Max { max: 0, current: 0 };
-    }
+    for line in lines.lines() {
+        if line.is_empty() {
+            top_k.push(Reverse(current));
 
-    fn add(&mut self, food: i32) {
-        self.current += food;
-    }
-
-    fn end(&mut self) {
-        if self.current > self.max {
-            self.max = self.current
+            if top_k.len() as i32 > k {
+                top_k.pop();
+            }
+            current = 0;
+        } else {
+            let int_thing: i32 = line.parse().unwrap();
+            current += int_thing;
         }
-        self.current = 0;
     }
+
+    let mut sum = 0;
+
+    for idk in top_k.iter() {
+        sum += idk.0;
+    }
+
+    return sum;
 }
 
 fn main() {
-    let file = File::open("data/1.txt").expect("file missing");
-    let reader = BufReader::new(file);
+    let mut contents = fs::read_to_string("data/1.txt").unwrap();
+    contents += "\n";
 
-    let mut max = Max::new();
-
-    for line in reader.lines() {
-        let thing = line.unwrap();
-        if thing.is_empty() {
-            max.end()
-        } else {
-            let int_thing = thing.parse().unwrap();
-            max.add(int_thing);
-        }
-    }
-
-    println!("{}", max.max);
+    println!("{}", sum_top_k(&contents, 1));
+    println!("{}", sum_top_k(&contents, 3));
 }
